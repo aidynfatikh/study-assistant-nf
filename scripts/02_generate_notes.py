@@ -3,6 +3,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 import os
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 class Note(BaseModel):
     id: int = Field(..., ge=1, le=10)
@@ -67,16 +70,16 @@ elif latest.startswith("```"):
 try:
     data = json.loads(latest)
     notes = [Note(**item) for item in data]
-    print(f"--- Generated {len(notes)} notes ---")
+    print(f"\n--- generated {len(notes)} notes ---\n")
     for note in notes:
         print(f"{note.id}. {note.heading} — {note.summary} (p.{note.page_ref})")
     
     with open("exam.json", "w") as f:
         json.dump(data, f, indent=2)
-    print("--- Saved to exam.json ---")
+    print("--- saved to exam.json ---")
 
 except Exception as e:
-    print("⚠️ Error parsing or validating the notes:")
+    print("error parsing or validating the notes:")
     print(e)
-    print("--- Raw content ---")
+    print("--- raw content ---")
     print(latest)

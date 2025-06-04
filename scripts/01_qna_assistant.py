@@ -2,6 +2,9 @@ import json
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -34,7 +37,8 @@ run = client.beta.threads.runs.create_and_poll(
 )
 messages = client.beta.threads.messages.list(thread_id=thread.id)
 
-print("\n--- assistant response ---")
+print(f"\n--- question: {question} ---")
+print("--- assistant response ---\n")
 for message in messages.data:
     if message.role == "assistant":
         for content in message.content:
