@@ -6,7 +6,6 @@ import os
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-
 class Note(BaseModel):
     id: int = Field(..., ge=1, le=10)
     heading: str
@@ -21,6 +20,7 @@ with open("ids.json", "r") as f:
 
 assistant_id = ids["assistant_id"]
 vector_store_id = ids["vector_store_id"]
+thread_id = ids["thread_id"]
 
 client.beta.assistants.update(
     assistant_id=assistant_id,
@@ -44,20 +44,19 @@ system = (
     "Respond with **only JSON** — no commentary, no markdown, no explanation."
 )
 
-thread = client.beta.threads.create()
 client.beta.threads.messages.create(
-    thread_id=thread.id,
+    thread_id=thread_id,
     role="user",
     content=system
 )
 
 run = client.beta.threads.runs.create_and_poll(
-    thread_id=thread.id,
+    thread_id=thread_id,
     assistant_id=assistant_id
 )
 
 # Get the latest messages
-messages = client.beta.threads.messages.list(thread_id=thread.id)
+messages = client.beta.threads.messages.list(thread_id=thread_id)
 latest = messages.data[0].content[0].text.value
 
 # Clean code block markers (if present)

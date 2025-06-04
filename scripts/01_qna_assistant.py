@@ -15,27 +15,27 @@ with open("ids.json", "r") as f:
 assistant_id = ids["assistant_id"]
 vector_store_id = ids["vector_store_id"]
 file_id = ids["file_id"]
-
+thread_id = ids["thread_id"]
 client.beta.assistants.update(
     assistant_id=assistant_id,
     tool_resources={"file_search": {"vector_store_ids": [vector_store_id]}}
 )
 
-thread = client.beta.threads.create()
-print(f"--- thread created: {thread.id} ---")
+print(f"--- thread loaded: {thread_id} ---")
 
+print("--- sending question ---")
 question = "what is the pdf about?"
 client.beta.threads.messages.create(
-    thread_id=thread.id,
+    thread_id=thread_id,
     role="user",
     content=question
 )
-
+print("--- assistant thinking... ---")
 run = client.beta.threads.runs.create_and_poll(
-    thread_id=thread.id,
+    thread_id=thread_id,
     assistant_id=assistant_id
 )
-messages = client.beta.threads.messages.list(thread_id=thread.id)
+messages = client.beta.threads.messages.list(thread_id=thread_id)
 
 print(f"\n--- question: {question} ---")
 print("--- assistant response ---\n")

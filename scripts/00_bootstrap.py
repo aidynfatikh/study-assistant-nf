@@ -15,7 +15,7 @@ assistant = client.beta.assistants.create(
   model="gpt-4o-mini",
 )
 
-print(f"--- assistant created {assistant.id} ---")
+print(f"--- assistant created: {assistant.id} ---")
 def create_file(client, file_path):
     with open(file_path, "rb") as file_content:
       result = client.files.create(
@@ -43,10 +43,14 @@ result = client.vector_stores.files.list(
 )
 print(f"--- vector store files: {result} ---")
 
+thread = client.beta.threads.create()
+print(f"--- thread created: {thread.id} ---")
+
 ids = {
     "assistant_id": assistant.id,
     "vector_store_id": vector_store.id,
-    "file_id": file_id
+    "file_id": file_id,
+    "thread_id": thread.id
 }
 with open("ids.json", "w") as f:
     json.dump(ids, f)
