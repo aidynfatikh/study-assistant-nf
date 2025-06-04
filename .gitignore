@@ -22,7 +22,9 @@ env/
 *.sqlite3
 
 # JSON files with sensitive info
-*.json
+ids.json
+sample_response.json
+exam.json
 
 # Python packaging
 *.egg-info/
