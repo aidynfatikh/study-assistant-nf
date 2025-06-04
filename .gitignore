@@ -23,7 +23,6 @@ env/
 
 # JSON files with sensitive info
 ids.json
-sample_response.json
 exam.json
 
 # Python packaging
