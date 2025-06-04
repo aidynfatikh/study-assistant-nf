@@ -1,20 +1,25 @@
-import json
-from openai import OpenAI
-from dotenv import load_dotenv
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
+from openai import OpenAI
+import json
+
 import os
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+if not os.path.exists("ids.json"):
+    print("--- ids.json not found ---")
+    print("--- exiting ---")
+    exit()
+
 class Note(BaseModel):
     id: int = Field(..., ge=1, le=10)
-    heading: str
+    heading: str = Field(..., max_length=150)
     summary: str = Field(..., max_length=150)
-    page_ref: int | None = None
+    page_ref: int | None = Field(None, ge=1, le=100)
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 with open("ids.json", "r") as f:
     ids = json.load(f)
 
@@ -55,7 +60,6 @@ run = client.beta.threads.runs.create_and_poll(
     assistant_id=assistant_id
 )
 
-# Get the latest messages
 messages = client.beta.threads.messages.list(thread_id=thread_id)
 latest = messages.data[0].content[0].text.value
 
@@ -65,20 +69,18 @@ if latest.startswith("```json"):
 elif latest.startswith("```"):
     latest = latest.strip("```").strip()
 
-# Parse and validate
 try:
     data = json.loads(latest)
     notes = [Note(**item) for item in data]
-    print(f"\n--- generated {len(notes)} notes ---\n")
+    print(f"--- generated {len(notes)} notes ---\n")
     for note in notes:
         print(f"{note.id}. {note.heading} — {note.summary} (p.{note.page_ref})")
     
-    with open("exam.json", "w") as f:
+    with open("exam_notes.json", "w") as f:
         json.dump(data, f, indent=2)
-    print("--- saved to exam.json ---")
+    print("--- saved to exam_notes.json ---")
 
 except Exception as e:
     print("error parsing or validating the notes:")
-    print(e)
     print("--- raw content ---")
     print(latest)

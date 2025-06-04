@@ -23,7 +23,7 @@ env/
 
 # JSON files with sensitive info
 ids.json
-exam.json
+exam_notes.json
 
 # Python packaging
 *.egg-info/

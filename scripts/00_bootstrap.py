@@ -5,53 +5,63 @@ import json
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-assistant = client.beta.assistants.create(
-  name="Math Tutor",
-  instructions="You are a personal math tutor. Write and run code to answer math questions.",
-  tools=[{"type": "file_search"}],
-  model="gpt-4o-mini",
-)
 
-print(f"--- assistant created: {assistant.id} ---")
-def create_file(client, file_path):
-    with open(file_path, "rb") as file_content:
-      result = client.files.create(
-          file=file_content,
-          purpose="assistants"
-      )
-    return result.id
+if os.path.exists("ids.json"):
+    print("--- ids.json found ---")
+    with open("ids.json", "r") as f:
+        ids = json.load(f)
+    assistant_id = ids["assistant_id"]
+    vector_store_id = ids["vector_store_id"]
+    file_id = ids["file_id"]
+    thread_id = ids["thread_id"]
+    print(f"--- skipping bootstrap ---")
+else:
 
-file_path = "../data/mvt.pdf"
-file_id = create_file(client, file_path)
-print(f"--- file created: {file_id} ---")
+    assistant = client.beta.assistants.create(
+        name="Math Tutor",
+        instructions="You are a personal math tutor. Write and run code to answer math questions.",
+        tools=[{"type": "file_search"}],
+        model="gpt-4o-mini",
+    )
 
-vector_store = client.vector_stores.create(
-    name="knowledge_base"
-)
+    print(f"--- assistant created: {assistant.id} ---")
+    def create_file(client, file_path):
+        with open(file_path, "rb") as file_content:
+            result = client.files.create(
+                file=file_content,
+                purpose="assistants"
+            )
+        return result.id
 
-print(f"--- vector store created: {vector_store.id} ---")
-client.vector_stores.files.create(
-    vector_store_id=vector_store.id,
-    file_id=file_id
-)
+    file_path = "../data/mvt.pdf"
+    file_id = create_file(client, file_path)
+    print(f"--- file created: {file_id} ---")
+    vector_store = client.vector_stores.create(
+        name="knowledge_base"
+    )
 
-result = client.vector_stores.files.list(
-    vector_store_id=vector_store.id
-)
-print(f"--- vector store files: {result} ---")
+    print(f"--- vector store created: {vector_store.id} ---")
+    client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file_id
+    )
 
-thread = client.beta.threads.create()
-print(f"--- thread created: {thread.id} ---")
+    result = client.vector_stores.files.list(
+        vector_store_id=vector_store.id
+    )
 
-ids = {
-    "assistant_id": assistant.id,
-    "vector_store_id": vector_store.id,
-    "file_id": file_id,
-    "thread_id": thread.id
-}
-with open("ids.json", "w") as f:
-    json.dump(ids, f)
-print("--- IDs saved to ids.json ---")
+    print(f"--- vector store files: {result} ---")
+    thread = client.beta.threads.create()
+    print(f"--- thread created: {thread.id} ---")
+    ids = {
+        "assistant_id": assistant.id,
+        "vector_store_id": vector_store.id,
+        "file_id": file_id,
+        "thread_id": thread.id
+    }
+    
+    with open("ids.json", "w") as f:
+        json.dump(ids, f)
+    print("--- IDs saved to ids.json ---")

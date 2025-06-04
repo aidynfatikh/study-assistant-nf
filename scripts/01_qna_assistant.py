@@ -3,8 +3,12 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 import warnings
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+if not os.path.exists("ids.json"):
+    print("--- ids.json not found ---")
+    print("--- exiting ---")
+    exit()
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -22,7 +26,6 @@ client.beta.assistants.update(
 )
 
 print(f"--- thread loaded: {thread_id} ---")
-
 print("--- sending question ---")
 question = "what is the pdf about?"
 client.beta.threads.messages.create(
@@ -30,14 +33,15 @@ client.beta.threads.messages.create(
     role="user",
     content=question
 )
+
 print("--- assistant thinking... ---")
 run = client.beta.threads.runs.create_and_poll(
     thread_id=thread_id,
     assistant_id=assistant_id
 )
-messages = client.beta.threads.messages.list(thread_id=thread_id)
 
-print(f"\n--- question: {question} ---")
+messages = client.beta.threads.messages.list(thread_id=thread_id)
+print(f"--- question: {question} ---")
 print("--- assistant response ---\n")
 for message in messages.data:
     if message.role == "assistant":
